@@ -69,6 +69,17 @@ void insert_data (map<string, vector<tuple<Date, Date, float, vector<string>>>> 
     Date fecha_fin = string_to_date (fecha_fin_str);
 
     /* Convertirla al mes deseado */
+    /* Ignorar si se encuentra totalmente fuera del rango */
+    if (fecha_inicio.year != year && fecha_fin.year != year)
+        return;
+    if (fecha_inicio.year == year && fecha_fin.year == year) {
+        if (fecha_inicio.month < month && fecha_fin.month < month)
+            return;
+        if (fecha_inicio.month > month && fecha_fin.month > month) {
+            return;
+        }
+    }
+    /* Convertirla al mes deseado */
     if (fecha_inicio.month != month && fecha_fin.month == month) {
         fecha_inicio.month = month;
         fecha_inicio.day = 1;
@@ -85,6 +96,16 @@ void insert_data (map<string, vector<tuple<Date, Date, float, vector<string>>>> 
         fecha_fin.month = month;
         fecha_fin.day = get_num_day (month);
         fecha_inicio.year = fecha_fin.year = year;
+    }
+    if (fecha_inicio.year != year && fecha_fin.year != year)
+        return;
+    if (fecha_inicio.year == year && fecha_fin.year == year) {
+        if (fecha_inicio.month < month && fecha_fin.month < month)
+            return;
+        if (fecha_inicio.month > month && fecha_fin.month > month) {
+            cout << "here" << endl;
+            return;
+        }
     }
     /**/
     tuple<Date, Date, float, vector<string>> new_entry = { fecha_inicio, fecha_fin, aporte, other_fields };
@@ -111,6 +132,9 @@ Date string_to_date (string date) {
     day = stoi (day_str);
     month = stoi (month_str);
     year = stoi (year_str);
+
+    if (year < 2000)
+        year += 2000;
 
     Date new_date (day, month, year);
     return new_date;
@@ -173,6 +197,10 @@ vector<tuple<Date, Date, float, vector<string>>> cross_date (vector<tuple<Date, 
                 return current_ranges;
             }
             if (get<1> (range) < get<1> (aux)) {
+                if (get<1> (range).day == get_num_day(get<1> (range).month)) {
+                    sort(current_ranges.begin(), current_ranges.end(), compare_ranges_by_start_date);
+                    return current_ranges;
+                }
                 Date new_start_date (get<1> (range).day + 1, get<1> (range).month, get<1> (range).year);
                 aux = {new_start_date, get<1> (aux), get<2> (aux), get<3> (aux)};
             }
@@ -297,8 +325,8 @@ void write_output (string filename, map<string, vector<tuple<Date, Date, float, 
         for (int i = 0; i < range_vector.size(); i++) {
             output << it->first << ",";
             output << get<2> (range_vector[i]) << ",";
-            output << get<0> (range_vector[i]).month << "/" << get<0> (range_vector[i]).day << "/" <<  get<0> (range_vector[i]).year << ",";
-            output << get<1> (range_vector[i]).month << "/" << get<1> (range_vector[i]).day << "/" <<  get<1> (range_vector[i]).year << ",";
+            output << get<0> (range_vector[i]).day << "/" << get<0> (range_vector[i]).month << "/" <<  get<0> (range_vector[i]).year << ",";
+            output << get<1> (range_vector[i]).day << "/" << get<1> (range_vector[i]).month << "/" <<  get<1> (range_vector[i]).year << ",";
             for (int j = 0; j < get<3> (range_vector[i]).size(); j++) {
                 output << get<3> (range_vector[i])[j];
                 if (j == get<3> (range_vector[i]).size() - 1)
